@@ -81,3 +81,5 @@
 | `sent_at`      | TIMESTAMP | Default: `now()`     |
 
 ---
+
+![ERD Diagram](airbnb_erd_diagram.png)
