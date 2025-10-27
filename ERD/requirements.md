@@ -82,4 +82,5 @@
 
 ---
 
-![ERD Diagram](airbnb_erd_diagram.jpg)
+![ERD Diagram](database_erd.jpg)
+*Note: The ERD diagram visually represents the relationships between the tables outlined above.*
