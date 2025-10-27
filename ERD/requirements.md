@@ -82,4 +82,4 @@
 
 ---
 
-![ERD Diagram](airbnb_erd_diagram.png)
+![ERD Diagram](airbnb_erd_diagram.jpg)
