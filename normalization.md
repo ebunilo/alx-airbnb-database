@@ -48,9 +48,9 @@ This document explains the normalization steps taken to bring the Airbnb databas
 
 ### 1. Address Normalization
 
-**Before**: Single `location` field in Property table
+- **Before**: Single `location` field in Property table
 
-**After**: Separate `Address` table with structured address components
+- **After**: Separate `Address` table with structured address components
 
 ```sql
 -- Old
