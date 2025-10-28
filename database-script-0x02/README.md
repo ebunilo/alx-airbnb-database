@@ -2,7 +2,6 @@
 
 This task involves populating the previously defined Airbnb database schema with realistic sample data.
 
-
 ## Objective
 
 - Write SQL `INSERT` statements to add mock data for all key entities:
@@ -27,7 +26,7 @@ This task involves populating the previously defined Airbnb database schema with
 
 The sample data creates a realistic vacation rental platform with:
 
-### Users:
+### Users
 
 - 3 Hosts: Sarah, Mike, Emily (each with 2 properties)
 
@@ -35,7 +34,7 @@ The sample data creates a realistic vacation rental platform with:
 
 - 1 Admin: System administrator
 
-### Properties:
+### Properties
 
 - 6 diverse properties across different locations (beach, mountain, city, lake, desert, forest)
 
@@ -45,7 +44,7 @@ The sample data creates a realistic vacation rental platform with:
 
 - Comprehensive amenity assignments
 
-### Bookings:
+### Bookings
 
 - 7 bookings with different statuses:
 
@@ -57,19 +56,19 @@ The sample data creates a realistic vacation rental platform with:
 
 - 1 canceled booking
 
-### Financial Transactions:
+### Financial Transactions
 
 - 5 payments with different statuses (completed, pending, refunded)
 
 - Multiple payment methods (credit card, PayPal, Stripe)
 
-### Reviews & Communication:
+### Reviews & Communication
 
 - 3 detailed reviews from actual guests
 
 - 5 sample messages showing host-guest and guest-guest communication
 
-## Data Relationships:
+## Data Relationships
 
 - All foreign key relationships are properly maintained
 
@@ -80,4 +79,3 @@ The sample data creates a realistic vacation rental platform with:
 - Geographic diversity in property locations
 
 This dataset provides a solid foundation for testing queries, demonstrating application functionality, and ensuring all database relationships work correctly.
-
