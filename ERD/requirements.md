@@ -1,4 +1,6 @@
-## Database Schema – Airbnb-Style Booking Platform
+# Entities, Relationships, Constraints and ERD for Airbnb-Style Booking Platform
+
+## Database Schema
 
 ### Users Table
 
@@ -81,6 +83,8 @@
 | `sent_at`      | TIMESTAMP | Default: `now()`     |
 
 ---
+
+## ERD Diagram
 
 ![ERD Diagram](database_erd.jpg)
 *Note: The ERD diagram visually represents the relationships between the tables outlined above.*

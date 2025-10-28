@@ -50,6 +50,7 @@ This document explains the normalization steps taken to bring the Airbnb databas
 
 **Before**: Single `location` field in Property table
 **After**: Separate `Address` table with structured address components
+
 ```sql
 -- Old
 location VARCHAR(255) NOT NULL
