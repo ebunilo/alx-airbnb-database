@@ -49,6 +49,7 @@ This document explains the normalization steps taken to bring the Airbnb databas
 ### 1. Address Normalization
 
 **Before**: Single `location` field in Property table
+
 **After**: Separate `Address` table with structured address components
 
 ```sql
@@ -64,3 +65,71 @@ CREATE TABLE Address (
     postal_code VARCHAR(20),
     country VARCHAR(100) NOT NULL
 );
+```
+
+### 2. Property Type Normalization
+
+- **Before**: No explicit property type categorization
+- **After**: Separate PropertyType reference table
+
+```sql
+CREATE TABLE PropertyType (
+    type_id UUID PRIMARY KEY,
+    type_name VARCHAR(50) NOT NULL UNIQUE
+);
+```
+
+### 3. Calculated Field Removal
+
+- **Before**: total_price stored in Booking table
+- **After**: Calculate dynamically using property price and duration
+
+```sql
+-- Removed: total_price DECIMAL(10,2) NOT NULL
+-- Calculation can be done in application logic or views
+```
+
+### 4. Enhanced Payment Tracking
+
+- **Before**: Basic payment recording
+- **After**: Comprehensive payment status and transaction tracking
+
+```sql
+-- Added
+status VARCHAR(20) NOT NULL,
+transaction_id VARCHAR(255)
+```
+
+### 5. Many-to-Many Relationships
+
+- **Before**: No structured amenity tracking
+- **After**: Proper Amenity and PropertyAmenity junction table
+
+```sql
+CREATE TABLE PropertyAmenity (
+    property_id UUID,
+    amenity_id UUID,
+    PRIMARY KEY (property_id, amenity_id)
+);
+```
+
+## Benefits of Normalized Design
+
+- **Data Integrity**: Reduced redundancy and update anomalies
+
+- **Flexibility**: Easier to modify address formats or add new property types
+
+- **Query Performance**: Better indexing opportunities with normalized tables
+
+- **Maintainability**: Clear separation of concerns between entities
+
+- **Scalability**: Support for international addresses and complex amenities
+
+## Trade-offs Considered
+
+- **Complexity**: More joins required for common queries
+
+- **Performance**: Potential need for denormalized views for frequent queries
+
+- **Development** Overhead: Additional tables to manage
+However, the benefits of data integrity and maintainability outweigh these concerns in the long term.
