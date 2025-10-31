@@ -1,4 +1,4 @@
-INNER JOIN
+-- INNER JOIN
 SELECT 
   Booking.booking_id,
   Booking.start_date, 
