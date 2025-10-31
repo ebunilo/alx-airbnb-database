@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =====================================================
--- USER TABLE (Remains largely unchanged)
+-- USER TABLE (Already in 3NF)
 -- =====================================================
 CREATE TABLE "User" (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -16,29 +16,36 @@ CREATE TABLE "User" (
 );
 
 CREATE INDEX idx_user_email ON "User"(email);
+CREATE INDEX idx_user_role ON "User"(role);
 
 -- =====================================================
--- ADDRESS TABLE (New - Normalized addresses)
+-- PROPERTY_TYPE TABLE (New - Removes repeating location patterns)
 -- =====================================================
-CREATE TABLE Address (
-    address_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    street_address VARCHAR(255) NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(100),
-    postal_code VARCHAR(20),
-    country VARCHAR(100) NOT NULL
-);
-
-CREATE INDEX idx_address_location ON Address(city, country);
-
--- =====================================================
--- PROPERTY TYPE TABLE (New - Categorical data normalization)
--- =====================================================
-CREATE TABLE PropertyType (
-    type_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    type_name VARCHAR(50) NOT NULL UNIQUE,
+CREATE TABLE Property_Type (
+    property_type_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type_name VARCHAR(50) UNIQUE NOT NULL,
     description TEXT
 );
+
+-- =====================================================
+-- LOCATION TABLE (New - Normalizes location data)
+-- =====================================================
+CREATE TABLE Location (
+    location_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    address_line1 VARCHAR(255) NOT NULL,
+    address_line2 VARCHAR(255),
+    city VARCHAR(100) NOT NULL,
+    state_province VARCHAR(100) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_location_city ON Location(city);
+CREATE INDEX idx_location_country ON Location(country);
+CREATE INDEX idx_location_geo ON Location(latitude, longitude);
 
 -- =====================================================
 -- PROPERTY TABLE (Normalized)
@@ -46,85 +53,142 @@ CREATE TABLE PropertyType (
 CREATE TABLE Property (
     property_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     host_id UUID NOT NULL,
-    address_id UUID NOT NULL,
-    type_id UUID NOT NULL,
+    location_id UUID NOT NULL,
+    property_type_id UUID NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    price_per_night DECIMAL(10,2) NOT NULL CHECK (price_per_night >= 0),
+    base_price_per_night DECIMAL(10,2) NOT NULL CHECK (base_price_per_night > 0),
     max_guests INTEGER NOT NULL CHECK (max_guests > 0),
     bedrooms INTEGER NOT NULL CHECK (bedrooms >= 0),
-    bathrooms INTEGER NOT NULL CHECK (bathrooms >= 0),
+    bathrooms INTEGER NOT NULL CHECK (bathrooms > 0),
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
     CONSTRAINT fk_property_host FOREIGN KEY (host_id)
         REFERENCES "User"(user_id)
         ON DELETE CASCADE,
-    CONSTRAINT fk_property_address FOREIGN KEY (address_id)
-        REFERENCES Address(address_id)
+    CONSTRAINT fk_property_location FOREIGN KEY (location_id)
+        REFERENCES Location(location_id)
         ON DELETE RESTRICT,
-    CONSTRAINT fk_property_type FOREIGN KEY (type_id)
-        REFERENCES PropertyType(type_id)
+    CONSTRAINT fk_property_type FOREIGN KEY (property_type_id)
+        REFERENCES Property_Type(property_type_id)
         ON DELETE RESTRICT
 );
 
 CREATE INDEX idx_property_host_id ON Property(host_id);
-CREATE INDEX idx_property_address_id ON Property(address_id);
-CREATE INDEX idx_property_type_id ON Property(type_id);
+CREATE INDEX idx_property_location_id ON Property(location_id);
+CREATE INDEX idx_property_type_id ON Property(property_type_id);
+CREATE INDEX idx_property_active ON Property(is_active);
 
 -- =====================================================
--- BOOKING TABLE (Normalized - removed calculated field)
+-- BOOKING_STATUS TABLE (New - Normalizes status values)
+-- =====================================================
+CREATE TABLE Booking_Status (
+    status_code VARCHAR(10) PRIMARY KEY,
+    status_name VARCHAR(50) NOT NULL,
+    description TEXT
+);
+
+-- =====================================================
+-- BOOKING TABLE (Normalized)
 -- =====================================================
 CREATE TABLE Booking (
     booking_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id UUID NOT NULL,
     user_id UUID NOT NULL,
+    status_code VARCHAR(10) NOT NULL DEFAULT 'pending',
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    status VARCHAR(10) NOT NULL CHECK (status IN ('pending', 'confirmed', 'canceled', 'completed')),
+    number_of_guests INTEGER NOT NULL CHECK (number_of_guests > 0),
+    base_total DECIMAL(10,2) NOT NULL,
+    service_fee DECIMAL(10,2) NOT NULL DEFAULT 0,
+    tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    total_price DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
     CONSTRAINT fk_booking_property FOREIGN KEY (property_id)
         REFERENCES Property(property_id)
         ON DELETE CASCADE,
     CONSTRAINT fk_booking_user FOREIGN KEY (user_id)
         REFERENCES "User"(user_id)
         ON DELETE CASCADE,
-    CONSTRAINT chk_booking_dates CHECK (start_date < end_date)
+    CONSTRAINT fk_booking_status FOREIGN KEY (status_code)
+        REFERENCES Booking_Status(status_code)
+        ON DELETE RESTRICT,
+    CONSTRAINT chk_booking_dates CHECK (start_date < end_date),
+    CONSTRAINT chk_booking_total CHECK (total_price = base_total + service_fee + tax_amount)
 );
 
 CREATE INDEX idx_booking_property_id ON Booking(property_id);
 CREATE INDEX idx_booking_user_id ON Booking(user_id);
+CREATE INDEX idx_booking_status ON Booking(status_code);
 CREATE INDEX idx_booking_dates ON Booking(start_date, end_date);
 
 -- =====================================================
--- PAYMENT TABLE (Enhanced with status tracking)
+-- PAYMENT_METHOD TABLE (New - Normalizes payment methods)
+-- =====================================================
+CREATE TABLE Payment_Method (
+    method_code VARCHAR(20) PRIMARY KEY,
+    method_name VARCHAR(50) NOT NULL,
+    description TEXT
+);
+
+-- =====================================================
+-- PAYMENT_STATUS TABLE (New - Tracks payment lifecycle)
+-- =====================================================
+CREATE TABLE Payment_Status (
+    status_code VARCHAR(20) PRIMARY KEY,
+    status_name VARCHAR(50) NOT NULL,
+    description TEXT
+);
+
+-- =====================================================
+-- PAYMENT TABLE (Normalized)
 -- =====================================================
 CREATE TABLE Payment (
     payment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     booking_id UUID NOT NULL,
+    method_code VARCHAR(20) NOT NULL,
+    status_code VARCHAR(20) NOT NULL DEFAULT 'pending',
     amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
-    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('credit_card', 'paypal', 'stripe')),
-    status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
-    transaction_id VARCHAR(255), -- For payment processor reference
+    currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+    transaction_id VARCHAR(255), -- External payment processor ID
+    payment_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
     CONSTRAINT fk_payment_booking FOREIGN KEY (booking_id)
         REFERENCES Booking(booking_id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_payment_method FOREIGN KEY (method_code)
+        REFERENCES Payment_Method(method_code)
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_payment_status FOREIGN KEY (status_code)
+        REFERENCES Payment_Status(status_code)
+        ON DELETE RESTRICT
 );
 
 CREATE INDEX idx_payment_booking_id ON Payment(booking_id);
-CREATE INDEX idx_payment_status ON Payment(status);
+CREATE INDEX idx_payment_status ON Payment(status_code);
+CREATE INDEX idx_payment_transaction ON Payment(transaction_id);
 
 -- =====================================================
--- REVIEW TABLE (Remains largely unchanged)
+-- REVIEW TABLE (Already in 3NF with enhancements)
 -- =====================================================
 CREATE TABLE Review (
     review_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id UUID NOT NULL,
     user_id UUID NOT NULL,
-    booking_id UUID NOT NULL, -- Ensures reviews are from actual bookings
+    booking_id UUID NOT NULL, -- Ensures only guests with actual bookings can review
     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    title VARCHAR(200),
     comment TEXT NOT NULL,
+    is_verified BOOLEAN DEFAULT FALSE, -- Marks if review is from actual booking
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
     CONSTRAINT fk_review_property FOREIGN KEY (property_id)
         REFERENCES Property(property_id)
         ON DELETE CASCADE,
@@ -139,16 +203,19 @@ CREATE TABLE Review (
 
 CREATE INDEX idx_review_property_id ON Review(property_id);
 CREATE INDEX idx_review_user_id ON Review(user_id);
+CREATE INDEX idx_review_rating ON Review(rating);
 
 -- =====================================================
--- MESSAGE TABLE (Remains unchanged)
+-- MESSAGE TABLE (Already in 3NF)
 -- =====================================================
 CREATE TABLE Message (
     message_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     sender_id UUID NOT NULL,
     recipient_id UUID NOT NULL,
     message_body TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
     CONSTRAINT fk_message_sender FOREIGN KEY (sender_id)
         REFERENCES "User"(user_id)
         ON DELETE CASCADE,
@@ -159,24 +226,5 @@ CREATE TABLE Message (
 
 CREATE INDEX idx_message_sender_id ON Message(sender_id);
 CREATE INDEX idx_message_recipient_id ON Message(recipient_id);
+CREATE INDEX idx_message_sent_at ON Message(sent_at);
 
--- =====================================================
--- PROPERTY AMENITY TABLE (New - Many-to-Many relationship)
--- =====================================================
-CREATE TABLE Amenity (
-    amenity_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    amenity_name VARCHAR(100) NOT NULL UNIQUE,
-    category VARCHAR(50) NOT NULL
-);
-
-CREATE TABLE PropertyAmenity (
-    property_id UUID NOT NULL,
-    amenity_id UUID NOT NULL,
-    PRIMARY KEY (property_id, amenity_id),
-    CONSTRAINT fk_property_amenity_property FOREIGN KEY (property_id)
-        REFERENCES Property(property_id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_property_amenity_amenity FOREIGN KEY (amenity_id)
-        REFERENCES Amenity(amenity_id)
-        ON DELETE CASCADE
-);
