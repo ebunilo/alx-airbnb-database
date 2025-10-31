@@ -27,18 +27,18 @@ INSERT INTO PropertyType (type_id, type_name, description) VALUES
 ('b1b2c3d4-1234-5678-9abc-123456789015', 'Beach House', 'Property located directly on the beach');
 
 -- Insert Addresses
-INSERT INTO Address (address_id, street_address, city, state_province, postal_code, country, latitude, longitude) VALUES
+INSERT INTO Address (address_id, street_address, city, state, postal_code, country) VALUES
 -- For Sarah's properties
-('c1b2c3d4-1234-5678-9abc-123456789021', '123 Ocean View Drive', 'Miami Beach', 'FL', '33139', 'USA', 25.7617, -80.1918),
-('c1b2c3d4-1234-5678-9abc-123456789022', '456 Mountain Trail', 'Aspen', 'CO', '81611', 'USA', 39.1911, -106.8175),
+('c1b2c3d4-1234-5678-9abc-123456789021', '123 Ocean View Drive', 'Miami Beach', 'FL', '33139', 'USA'),
+('c1b2c3d4-1234-5678-9abc-123456789022', '456 Mountain Trail', 'Aspen', 'CO', '81611', 'USA'),
 
 -- For Mike's properties
-('c1b2c3d4-1234-5678-9abc-123456789023', '789 Downtown Street', 'New York', 'NY', '10001', 'USA', 40.7128, -74.0060),
-('c1b2c3d4-1234-5678-9abc-123456789024', '321 Lakeside Road', 'Lake Tahoe', 'CA', '96150', 'USA', 39.0968, -120.0324),
+('c1b2c3d4-1234-5678-9abc-123456789023', '789 Downtown Street', 'New York', 'NY', '10001', 'USA'),
+('c1b2c3d4-1234-5678-9abc-123456789024', '321 Lakeside Road', 'Lake Tahoe', 'CA', '96150', 'USA'),
 
 -- For Emily's properties
-('c1b2c3d4-1234-5678-9abc-123456789025', '654 Desert Oasis Lane', 'Scottsdale', 'AZ', '85251', 'USA', 33.4942, -111.9261),
-('c1b2c3d4-1234-5678-9abc-123456789026', '987 Forest Retreat', 'Portland', 'OR', '97205', 'USA', 45.5231, -122.6765);
+('c1b2c3d4-1234-5678-9abc-123456789025', '654 Desert Oasis Lane', 'Scottsdale', 'AZ', '85251', 'USA'),
+('c1b2c3d4-1234-5678-9abc-123456789026', '987 Forest Retreat', 'Portland', 'OR', '97205', 'USA');
 
 -- Insert Amenities
 INSERT INTO Amenity (amenity_id, amenity_name, category) VALUES
