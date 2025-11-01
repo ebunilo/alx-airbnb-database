@@ -1,40 +1,33 @@
+# Advanced Database Concepts and Optimization Techniques
 
+This project focuses on advanced database concepts and practices to optimize query performance and enhance data retrieval efficiency in a complex Airbnb-like database schema.
 
-## Task - 0: Join Queries
+## Key Highlights
 
-### INNER JOIN – Bookings with Users
+### 1. Complex Queries with Joins
 
-Write a query to retrieve all bookings along with the users who made those bookings.
+Gain expertise in SQL joins with tasks that require combining multiple tables to extract meaningful insights. Learners explore INNER JOIN, LEFT JOIN, and FULL OUTER JOIN for various scenarios.
 
----
+### 2. Power of Subqueries
 
-### LEFT JOIN – Properties with Reviews
+Develop proficiency with both correlated and non-correlated subqueries. Learn how to nest queries for advanced data analysis, such as calculating average ratings or filtering users based on activity thresholds.
 
-Write a query to retrieve all properties and their associated reviews. Include properties that have no reviews.
+### 3. Aggregations and Window Functions
 
----
+Unlock analytical capabilities using SQL aggregation functions like COUNT and SUM. Dive into advanced window functions like ROW_NUMBER and RANK to rank and analyze data sets.
 
-### FULL OUTER JOIN – All Users and All Bookings
+### 4. Indexing for Optimization
 
-Write a query to retrieve all users and all bookings, including users with no bookings and bookings not linked to a user. (Simulated using `UNION` in MySQL.)
+Identify performance bottlenecks and write SQL commands to create indexes for frequently queried columns. They analyze the impact of these changes on query execution times.
 
----
+### 5. Query Optimization Techniques
 
-## Task - 1: Subquery Practice
+Write and analyze complex queries for retrieving detailed information about bookings, properties, users, and payments. Refactor queries to improve execution times by reducing redundancies and leveraging indexing.
 
-### Non-Correlated Subquery
+### 6. Partitioning Large Tables
 
-Write a query to find all properties where the average review rating is greater than 4.0.
+Address performance challenges with large datasets by implementing table partitioning. Focus on partitioning the Booking table to improve queries on date ranges and compare performance before and after partitioning.
 
----
+### 7. Performance Monitoring and Schema Refinement
 
-### Correlated Subquery
-
-Write a query to find all users who have made more than 3 bookings using a subquery that references the outer query.
-
-## Task - 2: Apply Aggregations and Window Functions
-### Aggregate Function
-Write a query to find the total number of bookings made by each user, using the COUNT function and GROUP BY clause.
-
-### Window Function
-Use a window function (ROW_NUMBER, RANK) to rank properties based on the total number of bookings they have received.
+Learners monitor query performance using SHOW PROFILE and EXPLAIN ANALYZE, identify bottlenecks, and propose schema changes. Practical tasks include implementing these adjustments and documenting results.
