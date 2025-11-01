@@ -1,192 +1,358 @@
 -- =====================================================
--- INSERT SAMPLE DATA
+-- POPULATE NORMALIZED DATABASE WITH SAMPLE DATA
 -- =====================================================
 
--- Insert Users (guests, hosts, and admin)
+-- Enable UUID generation extension (PostgreSQL)
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- =====================================================
+-- 1. CLEAN EXISTING DATA (Optional - for fresh start)
+-- =====================================================
+TRUNCATE TABLE Message, Review, Payment, Booking, Property, Location, 
+Property_Type, Payment_Status, Payment_Method, Booking_Status, "User" 
+CASCADE;
+
+-- =====================================================
+-- 2. INSERT REFERENCE DATA
+-- =====================================================
+
+-- Insert booking statuses
+INSERT INTO Booking_Status (status_code, status_name, description) VALUES
+('pending', 'Pending', 'Booking is awaiting confirmation'),
+('confirmed', 'Confirmed', 'Booking has been confirmed'),
+('canceled', 'Canceled', 'Booking has been canceled'),
+('completed', 'Completed', 'Booking has been completed');
+
+-- Insert payment methods
+INSERT INTO Payment_Method (method_code, method_name, description) VALUES
+('credit_card', 'Credit Card', 'Payment via credit card'),
+('paypal', 'PayPal', 'Payment via PayPal'),
+('stripe', 'Stripe', 'Payment via Stripe'),
+('bank_transfer', 'Bank Transfer', 'Payment via bank transfer');
+
+-- Insert payment statuses
+INSERT INTO Payment_Status (status_code, status_name, description) VALUES
+('pending', 'Pending', 'Payment is pending'),
+('processing', 'Processing', 'Payment is being processed'),
+('completed', 'Completed', 'Payment has been completed'),
+('failed', 'Failed', 'Payment has failed'),
+('refunded', 'Refunded', 'Payment has been refunded');
+
+-- Insert property types with auto-generated UUIDs
+INSERT INTO Property_Type (property_type_id, type_name, description) VALUES
+(uuid_generate_v4(), 'Apartment', 'Self-contained housing unit in a building'),
+(uuid_generate_v4(), 'House', 'Standalone residential building'),
+(uuid_generate_v4(), 'Villa', 'Luxury vacation home'),
+(uuid_generate_v4(), 'Condo', 'Individually owned unit in a complex'),
+(uuid_generate_v4(), 'Studio', 'Single-room apartment'),
+(uuid_generate_v4(), 'Cabin', 'Wooden house in natural surroundings'),
+(uuid_generate_v4(), 'Loft', 'Open-concept apartment');
+
+-- =====================================================
+-- 3. INSERT USERS (with explicit UUIDs for relationships)
+-- =====================================================
 INSERT INTO "User" (user_id, first_name, last_name, email, password_hash, phone_number, role, created_at) VALUES
+-- Admins
+(uuid_generate_v4(), 'John', 'Admin', 'john.admin@example.com', 'hashed_password_1', '+1-555-0101', 'admin', '2023-01-15 09:00:00'),
+
 -- Hosts
-('a1b2c3d4-1234-5678-9abc-123456789001', 'Sarah', 'Johnson', 'sarah.johnson@email.com', '$2b$10$examplehash1', '+1-555-0101', 'host', '2023-01-15 10:00:00'),
-('a1b2c3d4-1234-5678-9abc-123456789002', 'Mike', 'Chen', 'mike.chen@email.com', '$2b$10$examplehash2', '+1-555-0102', 'host', '2023-02-20 11:30:00'),
-('a1b2c3d4-1234-5678-9abc-123456789003', 'Emily', 'Rodriguez', 'emily.rodriguez@email.com', '$2b$10$examplehash3', '+1-555-0103', 'host', '2023-03-10 09:15:00'),
+(uuid_generate_v4(), 'Sarah', 'Johnson', 'sarah.johnson@example.com', 'hashed_password_2', '+1-555-0102', 'host', '2023-02-10 10:30:00'),
+(uuid_generate_v4(), 'Mike', 'Chen', 'mike.chen@example.com', 'hashed_password_3', '+1-555-0103', 'host', '2023-02-12 14:15:00'),
+(uuid_generate_v4(), 'Emily', 'Davis', 'emily.davis@example.com', 'hashed_password_4', '+1-555-0104', 'host', '2023-03-01 11:20:00'),
+(uuid_generate_v4(), 'David', 'Wilson', 'david.wilson@example.com', 'hashed_password_5', '+1-555-0105', 'host', '2023-03-05 16:45:00'),
 
 -- Guests
-('a1b2c3d4-1234-5678-9abc-123456789004', 'David', 'Wilson', 'david.wilson@email.com', '$2b$10$examplehash4', '+1-555-0104', 'guest', '2023-04-05 14:20:00'),
-('a1b2c3d4-1234-5678-9abc-123456789005', 'Lisa', 'Thompson', 'lisa.thompson@email.com', '$2b$10$examplehash5', '+1-555-0105', 'guest', '2023-04-12 16:45:00'),
-('a1b2c3d4-1234-5678-9abc-123456789006', 'James', 'Brown', 'james.brown@email.com', '$2b$10$examplehash6', '+1-555-0106', 'guest', '2023-05-01 08:30:00'),
-('a1b2c3d4-1234-5678-9abc-123456789007', 'Maria', 'Garcia', 'maria.garcia@email.com', '$2b$10$examplehash7', '+1-555-0107', 'guest', '2023-05-15 12:00:00'),
+(uuid_generate_v4(), 'Lisa', 'Brown', 'lisa.brown@example.com', 'hashed_password_6', '+1-555-0106', 'guest', '2023-03-10 08:00:00'),
+(uuid_generate_v4(), 'James', 'Miller', 'james.miller@example.com', 'hashed_password_7', '+1-555-0107', 'guest', '2023-03-12 12:30:00'),
+(uuid_generate_v4(), 'Maria', 'Garcia', 'maria.garcia@example.com', 'hashed_password_8', '+1-555-0108', 'guest', '2023-03-15 15:20:00'),
+(uuid_generate_v4(), 'Robert', 'Taylor', 'robert.taylor@example.com', 'hashed_password_9', '+1-555-0109', 'guest', '2023-03-18 09:45:00'),
+(uuid_generate_v4(), 'Jennifer', 'Lee', 'jennifer.lee@example.com', 'hashed_password_10', '+1-555-0110', 'guest', '2023-03-20 17:10:00');
 
--- Admin
-('a1b2c3d4-1234-5678-9abc-123456789008', 'Admin', 'User', 'admin@vacationrentals.com', '$2b$10$adminhash123', '+1-555-0000', 'admin', '2023-01-01 00:00:00');
+-- =====================================================
+-- 4. STORE GENERATED USER IDs FOR RELATIONSHIPS
+-- =====================================================
+DO $$ 
+DECLARE
+    admin_id UUID;
+    sarah_id UUID;
+    mike_id UUID;
+    emily_id UUID;
+    david_id UUID;
+    lisa_id UUID;
+    james_id UUID;
+    maria_id UUID;
+    robert_id UUID;
+    jennifer_id UUID;
+BEGIN
+    -- Get user IDs for relationships
+    SELECT user_id INTO admin_id FROM "User" WHERE email = 'john.admin@example.com';
+    SELECT user_id INTO sarah_id FROM "User" WHERE email = 'sarah.johnson@example.com';
+    SELECT user_id INTO mike_id FROM "User" WHERE email = 'mike.chen@example.com';
+    SELECT user_id INTO emily_id FROM "User" WHERE email = 'emily.davis@example.com';
+    SELECT user_id INTO david_id FROM "User" WHERE email = 'david.wilson@example.com';
+    SELECT user_id INTO lisa_id FROM "User" WHERE email = 'lisa.brown@example.com';
+    SELECT user_id INTO james_id FROM "User" WHERE email = 'james.miller@example.com';
+    SELECT user_id INTO maria_id FROM "User" WHERE email = 'maria.garcia@example.com';
+    SELECT user_id INTO robert_id FROM "User" WHERE email = 'robert.taylor@example.com';
+    SELECT user_id INTO jennifer_id FROM "User" WHERE email = 'jennifer.lee@example.com';
 
--- Insert Property Types
-INSERT INTO PropertyType (type_id, type_name, description) VALUES
-('b1b2c3d4-1234-5678-9abc-123456789011', 'Apartment', 'Self-contained housing unit in a building'),
-('b1b2c3d4-1234-5678-9abc-123456789012', 'House', 'Standalone residential building'),
-('b1b2c3d4-1234-5678-9abc-123456789013', 'Villa', 'Luxury vacation home with amenities'),
-('b1b2c3d4-1234-5678-9abc-123456789014', 'Cabin', 'Wooden house in natural surroundings'),
-('b1b2c3d4-1234-5678-9abc-123456789015', 'Beach House', 'Property located directly on the beach');
+    -- =====================================================
+    -- 5. INSERT LOCATIONS
+    -- =====================================================
+    INSERT INTO Location (location_id, address_line1, address_line2, city, state_province, postal_code, country, latitude, longitude, created_at) VALUES
+    -- New York Locations
+    (uuid_generate_v4(), '123 Manhattan Ave', 'Apt 4B', 'New York', 'NY', '10001', 'USA', 40.712776, -74.005974, '2023-02-10 10:30:00'),
+    (uuid_generate_v4(), '456 Brooklyn St', NULL, 'New York', 'NY', '11201', 'USA', 40.678178, -73.944158, '2023-02-12 14:15:00'),
+    (uuid_generate_v4(), '789 Queens Blvd', 'Floor 2', 'New York', 'NY', '11354', 'USA', 40.728224, -73.794852, '2023-03-01 11:20:00'),
 
--- Insert Addresses
-INSERT INTO Address (address_id, street_address, city, state, postal_code, country) VALUES
--- For Sarah's properties
-('c1b2c3d4-1234-5678-9abc-123456789021', '123 Ocean View Drive', 'Miami Beach', 'FL', '33139', 'USA'),
-('c1b2c3d4-1234-5678-9abc-123456789022', '456 Mountain Trail', 'Aspen', 'CO', '81611', 'USA'),
+    -- California Locations
+    (uuid_generate_v4(), '101 Beachfront Dr', NULL, 'Los Angeles', 'CA', '90291', 'USA', 34.052235, -118.243683, '2023-03-05 16:45:00'),
+    (uuid_generate_v4(), '234 Hollywood Hills', 'Villa 12', 'Los Angeles', 'CA', '90068', 'USA', 34.134117, -118.321495, '2023-03-10 08:00:00'),
+    (uuid_generate_v4(), '567 Mountain View', NULL, 'San Francisco', 'CA', '94102', 'USA', 37.774929, -122.419416, '2023-03-12 12:30:00'),
 
--- For Mike's properties
-('c1b2c3d4-1234-5678-9abc-123456789023', '789 Downtown Street', 'New York', 'NY', '10001', 'USA'),
-('c1b2c3d4-1234-5678-9abc-123456789024', '321 Lakeside Road', 'Lake Tahoe', 'CA', '96150', 'USA'),
+    -- Other Locations
+    (uuid_generate_v4(), '890 Lakefront Cottages', 'Cabin 5', 'Lake Tahoe', 'CA', '96150', 'USA', 39.096849, -120.032349, '2023-03-15 15:20:00'),
+    (uuid_generate_v4(), '321 Downtown Loft', NULL, 'Chicago', 'IL', '60601', 'USA', 41.878113, -87.629799, '2023-03-18 09:45:00'),
+    (uuid_generate_v4(), '654 Seaside Villa', NULL, 'Miami', 'FL', '33139', 'USA', 25.761681, -80.191788, '2023-03-20 17:10:00');
 
--- For Emily's properties
-('c1b2c3d4-1234-5678-9abc-123456789025', '654 Desert Oasis Lane', 'Scottsdale', 'AZ', '85251', 'USA'),
-('c1b2c3d4-1234-5678-9abc-123456789026', '987 Forest Retreat', 'Portland', 'OR', '97205', 'USA');
+    -- =====================================================
+    -- 6. GET PROPERTY TYPE IDs FOR RELATIONSHIPS
+    -- =====================================================
+    DECLARE
+        apartment_type_id UUID;
+        house_type_id UUID;
+        villa_type_id UUID;
+        condo_type_id UUID;
+        studio_type_id UUID;
+        cabin_type_id UUID;
+        loft_type_id UUID;
+    BEGIN
+        SELECT property_type_id INTO apartment_type_id FROM Property_Type WHERE type_name = 'Apartment';
+        SELECT property_type_id INTO house_type_id FROM Property_Type WHERE type_name = 'House';
+        SELECT property_type_id INTO villa_type_id FROM Property_Type WHERE type_name = 'Villa';
+        SELECT property_type_id INTO condo_type_id FROM Property_Type WHERE type_name = 'Condo';
+        SELECT property_type_id INTO studio_type_id FROM Property_Type WHERE type_name = 'Studio';
+        SELECT property_type_id INTO cabin_type_id FROM Property_Type WHERE type_name = 'Cabin';
+        SELECT property_type_id INTO loft_type_id FROM Property_Type WHERE type_name = 'Loft';
 
--- Insert Amenities
-INSERT INTO Amenity (amenity_id, amenity_name, category) VALUES
-('d1b2c3d4-1234-5678-9abc-123456789031', 'WiFi', 'Internet'),
-('d1b2c3d4-1234-5678-9abc-123456789032', 'Air Conditioning', 'Comfort'),
-('d1b2c3d4-1234-5678-9abc-123456789033', 'Heating', 'Comfort'),
-('d1b2c3d4-1234-5678-9abc-123456789034', 'Kitchen', 'Facilities'),
-('d1b2c3d4-1234-5678-9abc-123456789035', 'Swimming Pool', 'Recreation'),
-('d1b2c3d4-1234-5678-9abc-123456789036', 'Hot Tub', 'Recreation'),
-('d1b2c3d4-1234-5678-9abc-123456789037', 'Free Parking', 'Parking'),
-('d1b2c3d4-1234-5678-9abc-123456789038', 'Beach Access', 'Location'),
-('d1b2c3d4-1234-5678-9abc-123456789039', 'Mountain View', 'Location'),
-('d1b2c3d4-1234-5678-9abc-123456789040', 'Pet Friendly', 'Policies'),
-('d1b2c3d4-1234-5678-9abc-123456789041', 'Washer/Dryer', 'Laundry'),
-('d1b2c3d4-1234-5678-9abc-123456789042', 'Fireplace', 'Comfort');
+        -- =====================================================
+        -- 7. GET LOCATION IDs FOR RELATIONSHIPS
+        -- =====================================================
+        DECLARE
+            manhattan_loc_id UUID;
+            brooklyn_loc_id UUID;
+            queens_loc_id UUID;
+            la_beach_loc_id UUID;
+            hollywood_loc_id UUID;
+            sf_loc_id UUID;
+            tahoe_loc_id UUID;
+            chicago_loc_id UUID;
+            miami_loc_id UUID;
+        BEGIN
+            SELECT location_id INTO manhattan_loc_id FROM Location WHERE address_line1 = '123 Manhattan Ave';
+            SELECT location_id INTO brooklyn_loc_id FROM Location WHERE address_line1 = '456 Brooklyn St';
+            SELECT location_id INTO queens_loc_id FROM Location WHERE address_line1 = '789 Queens Blvd';
+            SELECT location_id INTO la_beach_loc_id FROM Location WHERE address_line1 = '101 Beachfront Dr';
+            SELECT location_id INTO hollywood_loc_id FROM Location WHERE address_line1 = '234 Hollywood Hills';
+            SELECT location_id INTO sf_loc_id FROM Location WHERE address_line1 = '567 Mountain View';
+            SELECT location_id INTO tahoe_loc_id FROM Location WHERE address_line1 = '890 Lakefront Cottages';
+            SELECT location_id INTO chicago_loc_id FROM Location WHERE address_line1 = '321 Downtown Loft';
+            SELECT location_id INTO miami_loc_id FROM Location WHERE address_line1 = '654 Seaside Villa';
 
--- Insert Properties
-INSERT INTO Property (property_id, host_id, address_id, type_id, name, description, price_per_night, max_guests, bedrooms, bathrooms, created_at, updated_at) VALUES
--- Sarah's properties
-('e1b2c3d4-1234-5678-9abc-123456789051', 'a1b2c3d4-1234-5678-9abc-123456789001', 'c1b2c3d4-1234-5678-9abc-123456789021', 'b1b2c3d4-1234-5678-9abc-123456789015', 
- 'Beachfront Paradise', 'Stunning beachfront apartment with panoramic ocean views and direct beach access. Perfect for romantic getaways or family vacations.', 
- 250.00, 6, 3, 2, '2023-02-01 09:00:00', '2023-06-15 14:30:00'),
+            -- =====================================================
+            -- 8. INSERT PROPERTIES
+            -- =====================================================
+            INSERT INTO Property (property_id, host_id, location_id, property_type_id, name, description, base_price_per_night, max_guests, bedrooms, bathrooms, is_active, created_at, updated_at) VALUES
+            -- Sarah Johnson's Properties
+            (uuid_generate_v4(), sarah_id, manhattan_loc_id, apartment_type_id, 'Cozy Manhattan Apartment', 'Beautiful apartment in the heart of Manhattan with stunning city views and modern amenities.', 150.00, 4, 2, 1, true, '2023-02-15 09:00:00', '2023-02-15 09:00:00'),
+            (uuid_generate_v4(), sarah_id, brooklyn_loc_id, house_type_id, 'Charming Brooklyn House', 'Spacious family home in trendy Brooklyn neighborhood with garden and modern kitchen.', 200.00, 6, 3, 2, true, '2023-02-20 14:30:00', '2023-02-20 14:30:00'),
 
-('e1b2c3d4-1234-5678-9abc-123456789052', 'a1b2c3d4-1234-5678-9abc-123456789001', 'c1b2c3d4-1234-5678-9abc-123456789022', 'b1b2c3d4-1234-5678-9abc-123456789014', 
- 'Cozy Mountain Cabin', 'Rustic cabin nestled in the mountains with breathtaking views. Perfect for skiing in winter and hiking in summer.', 
- 180.00, 4, 2, 1, '2023-02-15 10:30:00', '2023-07-20 11:15:00'),
+            -- Mike Chen's Properties
+            (uuid_generate_v4(), mike_id, queens_loc_id, condo_type_id, 'Modern Queens Condo', 'Luxury condo with panoramic views, gym access, and concierge service.', 180.00, 4, 2, 2, true, '2023-03-05 11:00:00', '2023-03-05 11:00:00'),
+            (uuid_generate_v4(), mike_id, la_beach_loc_id, villa_type_id, 'Beachfront Villa', 'Stunning beachfront property with private pool and direct beach access.', 450.00, 8, 4, 3, true, '2023-03-10 16:45:00', '2023-03-10 16:45:00'),
 
--- Mike's properties
-('e1b2c3d4-1234-5678-9abc-123456789053', 'a1b2c3d4-1234-5678-9abc-123456789002', 'c1b2c3d4-1234-5678-9abc-123456789023', 'b1b2c3d4-1234-5678-9abc-123456789011', 
- 'Modern Downtown Loft', 'Stylish loft in the heart of Manhattan. Walking distance to major attractions, restaurants, and shopping districts.', 
- 350.00, 2, 1, 1, '2023-03-01 08:45:00', '2023-08-10 16:20:00'),
+            -- Emily Davis's Properties
+            (uuid_generate_v4(), emily_id, hollywood_loc_id, house_type_id, 'Hollywood Hills Retreat', 'Private home with panoramic city views, pool, and outdoor entertainment area.', 350.00, 6, 3, 2, true, '2023-03-12 10:20:00', '2023-03-12 10:20:00'),
+            (uuid_generate_v4(), emily_id, sf_loc_id, apartment_type_id, 'San Francisco Downtown Loft', 'Industrial-style loft in downtown SF with exposed brick and high ceilings.', 220.00, 3, 1, 1, true, '2023-03-18 13:15:00', '2023-03-18 13:15:00'),
 
-('e1b2c3d4-1234-5678-9abc-123456789054', 'a1b2c3d4-1234-5678-9abc-123456789002', 'c1b2c3d4-1234-5678-9abc-123456789024', 'b1b2c3d4-1234-5678-9abc-123456789013', 
- 'Luxury Lakefront Villa', 'Exclusive villa with private beach on Lake Tahoe. Features hot tub, gourmet kitchen, and stunning lake views.', 
- 500.00, 8, 4, 3, '2023-03-10 14:20:00', '2023-09-05 09:45:00'),
+            -- David Wilson's Properties
+            (uuid_generate_v4(), david_id, tahoe_loc_id, cabin_type_id, 'Lake Tahoe Cabin', 'Rustic cabin with modern amenities, fireplace, and lake access.', 175.00, 5, 2, 1, true, '2023-03-20 09:30:00', '2023-03-20 09:30:00'),
+            (uuid_generate_v4(), david_id, chicago_loc_id, loft_type_id, 'Chicago Downtown Loft', 'Spacious loft in the heart of Chicago with skyline views.', 190.00, 4, 1, 1, true, '2023-03-25 15:40:00', '2023-03-25 15:40:00'),
+            (uuid_generate_v4(), david_id, miami_loc_id, villa_type_id, 'Miami Beach Villa', 'Luxury villa with private pool, tropical garden, and beachfront location.', 500.00, 10, 5, 4, true, '2023-04-01 12:00:00', '2023-04-01 12:00:00');
 
--- Emily's properties
-('e1b2c3d4-1234-5678-9abc-123456789055', 'a1b2c3d4-1234-5678-9abc-123456789003', 'c1b2c3d4-1234-5678-9abc-123456789025', 'b1b2c3d4-1234-5678-9abc-123456789012', 
- 'Desret Oasis Retreat', 'Spacious desert home with private pool and mountain views. Perfect for relaxing and enjoying the Arizona sun.', 
- 220.00, 6, 3, 2, '2023-03-20 11:10:00', '2023-10-12 13:25:00'),
+            -- =====================================================
+            -- 9. GET PROPERTY IDs FOR RELATIONSHIPS
+            -- =====================================================
+            DECLARE
+                manhattan_apt_id UUID;
+                brooklyn_house_id UUID;
+                queens_condo_id UUID;
+                beach_villa_id UUID;
+                hollywood_house_id UUID;
+                sf_loft_id UUID;
+                tahoe_cabin_id UUID;
+                chicago_loft_id UUID;
+                miami_villa_id UUID;
+            BEGIN
+                SELECT property_id INTO manhattan_apt_id FROM Property WHERE name = 'Cozy Manhattan Apartment';
+                SELECT property_id INTO brooklyn_house_id FROM Property WHERE name = 'Charming Brooklyn House';
+                SELECT property_id INTO queens_condo_id FROM Property WHERE name = 'Modern Queens Condo';
+                SELECT property_id INTO beach_villa_id FROM Property WHERE name = 'Beachfront Villa';
+                SELECT property_id INTO hollywood_house_id FROM Property WHERE name = 'Hollywood Hills Retreat';
+                SELECT property_id INTO sf_loft_id FROM Property WHERE name = 'San Francisco Downtown Loft';
+                SELECT property_id INTO tahoe_cabin_id FROM Property WHERE name = 'Lake Tahoe Cabin';
+                SELECT property_id INTO chicago_loft_id FROM Property WHERE name = 'Chicago Downtown Loft';
+                SELECT property_id INTO miami_villa_id FROM Property WHERE name = 'Miami Beach Villa';
 
-('e1b2c3d4-1234-5678-9abc-123456789056', 'a1b2c3d4-1234-5678-9abc-123456789003', 'c1b2c3d4-1234-5678-9abc-123456789026', 'b1b2c3d4-1234-5678-9abc-123456789012', 
- 'Forest Haven Cottage', 'Charming cottage surrounded by ancient forests. Peaceful retreat with modern amenities and nature at your doorstep.', 
- 160.00, 4, 2, 1, '2023-04-05 15:40:00', '2023-11-18 10:30:00');
+                -- =====================================================
+                -- 10. INSERT BOOKINGS
+                -- =====================================================
+                INSERT INTO Booking (booking_id, property_id, user_id, status_code, start_date, end_date, number_of_guests, base_total, service_fee, tax_amount, total_price, created_at, updated_at) VALUES
+                -- Lisa Brown's Bookings
+                (uuid_generate_v4(), manhattan_apt_id, lisa_id, 'completed', '2023-04-01', '2023-04-05', 2, 600.00, 60.00, 54.00, 714.00, '2023-03-15 14:20:00', '2023-04-05 11:00:00'),
+                (uuid_generate_v4(), beach_villa_id, lisa_id, 'confirmed', '2023-06-10', '2023-06-17', 4, 3150.00, 315.00, 283.50, 3748.50, '2023-05-01 09:15:00', '2023-05-01 09:15:00'),
 
--- Insert Property Amenities (Many-to-Many relationships)
-INSERT INTO PropertyAmenity (property_id, amenity_id) VALUES
--- Beachfront Paradise amenities
-('e1b2c3d4-1234-5678-9abc-123456789051', 'd1b2c3d4-1234-5678-9abc-123456789031'), -- WiFi
-('e1b2c3d4-1234-5678-9abc-123456789051', 'd1b2c3d4-1234-5678-9abc-123456789032'), -- AC
-('e1b2c3d4-1234-5678-9abc-123456789051', 'd1b2c3d4-1234-5678-9abc-123456789034'), -- Kitchen
-('e1b2c3d4-1234-5678-9abc-123456789051', 'd1b2c3d4-1234-5678-9abc-123456789035'), -- Pool
-('e1b2c3d4-1234-5678-9abc-123456789051', 'd1b2c3d4-1234-5678-9abc-123456789038'), -- Beach Access
-('e1b2c3d4-1234-5678-9abc-123456789051', 'd1b2c3d4-1234-5678-9abc-123456789041'), -- Washer/Dryer
+                -- James Miller's Bookings
+                (uuid_generate_v4(), hollywood_house_id, james_id, 'completed', '2023-04-15', '2023-04-20', 3, 1750.00, 175.00, 157.50, 2082.50, '2023-03-20 16:30:00', '2023-04-20 10:00:00'),
+                (uuid_generate_v4(), tahoe_cabin_id, james_id, 'pending', '2023-07-01', '2023-07-07', 4, 1050.00, 105.00, 94.50, 1249.50, '2023-06-15 11:45:00', '2023-06-15 11:45:00'),
 
--- Cozy Mountain Cabin amenities
-('e1b2c3d4-1234-5678-9abc-123456789052', 'd1b2c3d4-1234-5678-9abc-123456789031'), -- WiFi
-('e1b2c3d4-1234-5678-9abc-123456789052', 'd1b2c3d4-1234-5678-9abc-123456789033'), -- Heating
-('e1b2c3d4-1234-5678-9abc-123456789052', 'd1b2c3d4-1234-5678-9abc-123456789034'), -- Kitchen
-('e1b2c3d4-1234-5678-9abc-123456789052', 'd1b2c3d4-1234-5678-9abc-123456789036'), -- Hot Tub
-('e1b2c3d4-1234-5678-9abc-123456789052', 'd1b2c3d4-1234-5678-9abc-123456789039'), -- Mountain View
-('e1b2c3d4-1234-5678-9abc-123456789052', 'd1b2c3d4-1234-5678-9abc-123456789042'), -- Fireplace
+                -- Maria Garcia's Bookings
+                (uuid_generate_v4(), queens_condo_id, maria_id, 'completed', '2023-05-05', '2023-05-08', 2, 540.00, 54.00, 48.60, 642.60, '2023-04-10 13:20:00', '2023-05-08 12:00:00'),
+                (uuid_generate_v4(), brooklyn_house_id, maria_id, 'confirmed', '2023-08-12', '2023-08-19', 5, 1400.00, 140.00, 126.00, 1666.00, '2023-07-01 10:30:00', '2023-07-01 10:30:00'),
 
--- Modern Downtown Loft amenities
-('e1b2c3d4-1234-5678-9abc-123456789053', 'd1b2c3d4-1234-5678-9abc-123456789031'), -- WiFi
-('e1b2c3d4-1234-5678-9abc-123456789053', 'd1b2c3d4-1234-5678-9abc-123456789032'), -- AC
-('e1b2c3d4-1234-5678-9abc-123456789053', 'd1b2c3d4-1234-5678-9abc-123456789034'), -- Kitchen
+                -- Robert Taylor's Bookings
+                (uuid_generate_v4(), sf_loft_id, robert_id, 'completed', '2023-05-20', '2023-05-25', 2, 1100.00, 110.00, 99.00, 1309.00, '2023-04-25 15:40:00', '2023-05-25 09:00:00'),
+                (uuid_generate_v4(), chicago_loft_id, robert_id, 'canceled', '2023-06-15', '2023-06-18', 3, 570.00, 57.00, 51.30, 678.30, '2023-05-20 14:15:00', '2023-05-25 16:20:00'),
+                (uuid_generate_v4(), queens_condo_id, robert_id, 'completed', '2023-07-06', '2023-07-10', 2, 540.00, 54.00, 48.60, 642.60, '2023-07-01 13:20:00', '2023-07-08 12:00:00'),
 
--- Luxury Lakefront Villa amenities
-('e1b2c3d4-1234-5678-9abc-123456789054', 'd1b2c3d4-1234-5678-9abc-123456789031'), -- WiFi
-('e1b2c3d4-1234-5678-9abc-123456789054', 'd1b2c3d4-1234-5678-9abc-123456789032'), -- AC
-('e1b2c3d4-1234-5678-9abc-123456789054', 'd1b2c3d4-1234-5678-9abc-123456789034'), -- Kitchen
-('e1b2c3d4-1234-5678-9abc-123456789054', 'd1b2c3d4-1234-5678-9abc-123456789035'), -- Pool
-('e1b2c3d4-1234-5678-9abc-123456789054', 'd1b2c3d4-1234-5678-9abc-123456789036'), -- Hot Tub
-('e1b2c3d4-1234-5678-9abc-123456789054', 'd1b2c3d4-1234-5678-9abc-123456789041'), -- Washer/Dryer
 
--- Desert Oasis Retreat amenities
-('e1b2c3d4-1234-5678-9abc-123456789055', 'd1b2c3d4-1234-5678-9abc-123456789031'), -- WiFi
-('e1b2c3d4-1234-5678-9abc-123456789055', 'd1b2c3d4-1234-5678-9abc-123456789032'), -- AC
-('e1b2c3d4-1234-5678-9abc-123456789055', 'd1b2c3d4-1234-5678-9abc-123456789034'), -- Kitchen
-('e1b2c3d4-1234-5678-9abc-123456789055', 'd1b2c3d4-1234-5678-9abc-123456789035'), -- Pool
-('e1b2c3d4-1234-5678-9abc-123456789055', 'd1b2c3d4-1234-5678-9abc-123456789039'), -- Mountain View
+                -- Jennifer Lee's Bookings
+                (uuid_generate_v4(), miami_villa_id, jennifer_id, 'confirmed', '2023-09-01', '2023-09-10', 8, 4500.00, 450.00, 405.00, 5355.00, '2023-07-10 12:00:00', '2023-07-10 12:00:00');
 
--- Forest Haven Cottage amenities
-('e1b2c3d4-1234-5678-9abc-123456789056', 'd1b2c3d4-1234-5678-9abc-123456789031'), -- WiFi
-('e1b2c3d4-1234-5678-9abc-123456789056', 'd1b2c3d4-1234-5678-9abc-123456789033'), -- Heating
-('e1b2c3d4-1234-5678-9abc-123456789056', 'd1b2c3d4-1234-5678-9abc-123456789034'), -- Kitchen
-('e1b2c3d4-1234-5678-9abc-123456789056', 'd1b2c3d4-1234-5678-9abc-123456789039'), -- Mountain View
-('e1b2c3d4-1234-5678-9abc-123456789056', 'd1b2c3d4-1234-5678-9abc-123456789042'); -- Fireplace
+                -- =====================================================
+                -- 11. GET BOOKING IDs FOR RELATIONSHIPS
+                -- =====================================================
+                DECLARE
+                    lisa_manhattan_booking_id UUID;
+                    lisa_villa_booking_id UUID;
+                    james_hollywood_booking_id UUID;
+                    james_tahoe_booking_id UUID;
+                    maria_queens_booking_id UUID;
+                    maria_brooklyn_booking_id UUID;
+                    robert_sf_booking_id UUID;
+                    robert_chicago_booking_id UUID;
+                    jennifer_miami_booking_id UUID;
+                BEGIN
+                    SELECT booking_id INTO lisa_manhattan_booking_id FROM Booking WHERE property_id = manhattan_apt_id AND user_id = lisa_id;
+                    SELECT booking_id INTO lisa_villa_booking_id FROM Booking WHERE property_id = beach_villa_id AND user_id = lisa_id;
+                    SELECT booking_id INTO james_hollywood_booking_id FROM Booking WHERE property_id = hollywood_house_id AND user_id = james_id;
+                    SELECT booking_id INTO james_tahoe_booking_id FROM Booking WHERE property_id = tahoe_cabin_id AND user_id = james_id;
+                    SELECT booking_id INTO maria_queens_booking_id FROM Booking WHERE property_id = queens_condo_id AND user_id = maria_id;
+                    SELECT booking_id INTO maria_brooklyn_booking_id FROM Booking WHERE property_id = brooklyn_house_id AND user_id = maria_id;
+                    SELECT booking_id INTO robert_sf_booking_id FROM Booking WHERE property_id = sf_loft_id AND user_id = robert_id;
+                    SELECT booking_id INTO robert_chicago_booking_id FROM Booking WHERE property_id = chicago_loft_id AND user_id = robert_id;
+                    SELECT booking_id INTO jennifer_miami_booking_id FROM Booking WHERE property_id = miami_villa_id AND user_id = jennifer_id;
 
--- Insert Bookings
-INSERT INTO Booking (booking_id, property_id, user_id, start_date, end_date, status, created_at) VALUES
--- Completed bookings with reviews
-('f1b2c3d4-1234-5678-9abc-123456789061', 'e1b2c3d4-1234-5678-9abc-123456789051', 'a1b2c3d4-1234-5678-9abc-123456789004', '2023-06-01', '2023-06-07', 'completed', '2023-05-15 14:30:00'),
-('f1b2c3d4-1234-5678-9abc-123456789062', 'e1b2c3d4-1234-5678-9abc-123456789053', 'a1b2c3d4-1234-5678-9abc-123456789005', '2023-07-10', '2023-07-15', 'completed', '2023-06-20 09:15:00'),
-('f1b2c3d4-1234-5678-9abc-123456789063', 'e1b2c3d4-1234-5678-9abc-123456789055', 'a1b2c3d4-1234-5678-9abc-123456789006', '2023-08-05', '2023-08-12', 'completed', '2023-07-10 16:45:00'),
+                    -- =====================================================
+                    -- 12. INSERT PAYMENTS
+                    -- =====================================================
+                    INSERT INTO Payment (payment_id, booking_id, method_code, status_code, amount, currency, transaction_id, payment_date, created_at, updated_at) VALUES
+                    -- Lisa Brown's Payments
+                    (uuid_generate_v4(), lisa_manhattan_booking_id, 'credit_card', 'completed', 714.00, 'USD', 'txn_001_LB_Manhattan', '2023-03-15 14:25:00', '2023-03-15 14:25:00', '2023-03-15 14:25:00'),
+                    (uuid_generate_v4(), lisa_villa_booking_id, 'paypal', 'completed', 3748.50, 'USD', 'txn_002_LB_Villa', '2023-05-01 09:20:00', '2023-05-01 09:20:00', '2023-05-01 09:20:00'),
 
--- Upcoming confirmed bookings
-('f1b2c3d4-1234-5678-9abc-123456789064', 'e1b2c3d4-1234-5678-9abc-123456789052', 'a1b2c3d4-1234-5678-9abc-123456789007', '2023-12-20', '2023-12-27', 'confirmed', '2023-11-01 11:20:00'),
-('f1b2c3d4-1234-5678-9abc-123456789065', 'e1b2c3d4-1234-5678-9abc-123456789054', 'a1b2c3d4-1234-5678-9abc-123456789004', '2024-01-15', '2024-01-22', 'confirmed', '2023-11-15 13:40:00'),
+                    -- James Miller's Payments
+                    (uuid_generate_v4(), james_hollywood_booking_id, 'stripe', 'completed', 2082.50, 'USD', 'txn_003_JM_Hollywood', '2023-03-20 16:35:00', '2023-03-20 16:35:00', '2023-03-20 16:35:00'),
+                    (uuid_generate_v4(), james_tahoe_booking_id, 'credit_card', 'pending', 1249.50, 'USD', NULL, NULL, '2023-06-15 11:50:00', '2023-06-15 11:50:00'),
 
--- Pending bookings
-('f1b2c3d4-1234-5678-9abc-123456789066', 'e1b2c3d4-1234-5678-9abc-123456789056', 'a1b2c3d4-1234-5678-9abc-123456789005', '2024-02-10', '2024-02-14', 'pending', '2023-11-20 10:10:00'),
+                    -- Maria Garcia's Payments
+                    (uuid_generate_v4(), maria_queens_booking_id, 'credit_card', 'completed', 642.60, 'USD', 'txn_004_MG_Condo', '2023-04-10 13:25:00', '2023-04-10 13:25:00', '2023-04-10 13:25:00'),
+                    (uuid_generate_v4(), maria_brooklyn_booking_id, 'bank_transfer', 'processing', 1666.00, 'USD', 'txn_005_MG_Brooklyn', '2023-07-01 10:35:00', '2023-07-01 10:35:00', '2023-07-01 10:35:00'),
 
--- Canceled booking
-('f1b2c3d4-1234-5678-9abc-123456789067', 'e1b2c3d4-1234-5678-9abc-123456789051', 'a1b2c3d4-1234-5678-9abc-123456789006', '2023-09-01', '2023-09-05', 'canceled', '2023-08-15 15:30:00');
+                    -- Robert Taylor's Payments
+                    (uuid_generate_v4(), robert_sf_booking_id, 'stripe', 'completed', 1309.00, 'USD', 'txn_006_RT_SF_Loft', '2023-04-25 15:45:00', '2023-04-25 15:45:00', '2023-04-25 15:45:00'),
+                    (uuid_generate_v4(), robert_chicago_booking_id, 'credit_card', 'refunded', 678.30, 'USD', 'txn_007_RT_Chicago', '2023-05-20 14:20:00', '2023-05-20 14:20:00', '2023-05-25 16:25:00'),
 
--- Insert Payments
-INSERT INTO Payment (payment_id, booking_id, amount, payment_date, payment_method, status, transaction_id) VALUES
--- Completed payments
-('g1b2c3d4-1234-5678-9abc-123456789071', 'f1b2c3d4-1234-5678-9abc-123456789061', 1500.00, '2023-05-16 10:30:00', 'credit_card', 'completed', 'txn_7a8b9c0d123456'),
-('g1b2c3d4-1234-5678-9abc-123456789072', 'f1b2c3d4-1234-5678-9abc-123456789062', 1750.00, '2023-06-21 14:15:00', 'paypal', 'completed', 'txn_7a8b9c0d123457'),
-('g1b2c3d4-1234-5678-9abc-123456789073', 'f1b2c3d4-1234-5678-9abc-123456789063', 1540.00, '2023-07-11 09:45:00', 'stripe', 'completed', 'txn_7a8b9c0d123458'),
+                    -- Jennifer Lee's Payments
+                    (uuid_generate_v4(), jennifer_miami_booking_id, 'credit_card', 'completed', 5355.00, 'USD', 'txn_008_JL_Miami', '2023-07-10 12:05:00', '2023-07-10 12:05:00', '2023-07-10 12:05:00');
 
--- Pending payment
-('g1b2c3d4-1234-5678-9abc-123456789074', 'f1b2c3d4-1234-5678-9abc-123456789066', 640.00, '2023-11-21 11:30:00', 'credit_card', 'pending', 'txn_7a8b9c0d123459'),
+                    -- =====================================================
+                    -- 13. INSERT REVIEWS
+                    -- =====================================================
+                    INSERT INTO Review (review_id, property_id, user_id, booking_id, rating, title, comment, is_verified, created_at, updated_at) VALUES
+                    -- Reviews for Manhattan Apartment
+                    (uuid_generate_v4(), manhattan_apt_id, lisa_id, lisa_manhattan_booking_id, 5, 'Perfect City Getaway!', 'Amazing apartment with stunning views. The location was perfect and the host was very responsive. Would definitely stay again!', true, '2023-04-06 10:00:00', '2023-04-06 10:00:00'),
 
--- Refunded payment (for canceled booking)
-('g1b2c3d4-1234-5678-9abc-123456789075', 'f1b2c3d4-1234-5678-9abc-123456789067', 1000.00, '2023-08-16 08:20:00', 'credit_card', 'refunded', 'txn_7a8b9c0d123460');
+                    -- Reviews for Hollywood Hills Retreat
+                    (uuid_generate_v4(), hollywood_house_id, james_id, james_hollywood_booking_id, 4, 'Beautiful Views', 'The house had incredible views of the city. The pool was fantastic. Only minor issue was the parking, but overall great stay.', true, '2023-04-21 14:30:00', '2023-04-21 14:30:00'),
 
--- Insert Reviews
-INSERT INTO Review (review_id, property_id, user_id, booking_id, rating, comment, created_at) VALUES
--- Reviews for completed bookings
-('h1b2c3d4-1234-5678-9abc-123456789081', 'e1b2c3d4-1234-5678-9abc-123456789051', 'a1b2c3d4-1234-5678-9abc-123456789004', 'f1b2c3d4-1234-5678-9abc-123456789061', 5, 
- 'Absolutely stunning property! The beach access was incredible and the views were even better than the photos. Sarah was a wonderful host.', '2023-06-08 12:00:00'),
+                    -- Reviews for Queens Condo
+                    (uuid_generate_v4(), queens_condo_id, maria_id, maria_queens_booking_id, 5, 'Modern and Clean', 'Very modern condo with all the amenities we needed. Great location near public transportation. Host was very helpful!', true, '2023-05-09 09:15:00', '2023-05-09 09:15:00'),
 
-('h1b2c3d4-1234-5678-9abc-123456789082', 'e1b2c3d4-1234-5678-9abc-123456789053', 'a1b2c3d4-1234-5678-9abc-123456789005', 'f1b2c3d4-1234-5678-9abc-123456789062', 4, 
- 'Great location and very stylish apartment. Perfect for our NYC getaway. The only minor issue was street noise at night.', '2023-07-16 14:30:00'),
+                    -- Reviews for San Francisco Loft
+                    (uuid_generate_v4(), sf_loft_id, robert_id, robert_sf_booking_id, 4, 'Great Downtown Location', 'Loved the industrial style of the loft. Perfect location for exploring SF. The space was smaller than expected but comfortable.', true, '2023-05-26 16:45:00', '2023-05-26 16:45:00');
 
-('h1b2c3d4-1234-5678-9abc-123456789083', 'e1b2c3d4-1234-5678-9abc-123456789055', 'a1b2c3d4-1234-5678-9abc-123456789006', 'f1b2c3d4-1234-5678-9abc-123456789063', 5, 
- 'Paradise in the desert! The pool was amazing and the house had everything we needed. Emily was very responsive and helpful.', '2023-08-13 10:15:00');
+                    -- =====================================================
+                    -- 14. INSERT MESSAGES
+                    -- =====================================================
+                    INSERT INTO Message (message_id, sender_id, recipient_id, message_body, is_read, sent_at) VALUES
+                    -- Messages between Lisa Brown and Sarah Johnson
+                    (uuid_generate_v4(), lisa_id, sarah_id, 'Hi Sarah, I''m interested in your Manhattan apartment. Is it available for April 1-5?', true, '2023-03-10 09:30:00'),
+                    (uuid_generate_v4(), sarah_id, lisa_id, 'Hi Lisa! Yes, those dates are available. The apartment would be perfect for your stay.', true, '2023-03-10 10:15:00'),
 
--- Insert Messages
-INSERT INTO Message (message_id, sender_id, recipient_id, message_body, sent_at) VALUES
--- Guest to Host messages
-('i1b2c3d4-1234-5678-9abc-123456789091', 'a1b2c3d4-1234-5678-9abc-123456789004', 'a1b2c3d4-1234-5678-9abc-123456789001', 
- 'Hi Sarah, I''m interested in your beachfront property. Is the pool heated year-round?', '2023-05-10 09:30:00'),
+                    -- Messages between James Miller and Emily Davis
+                    (uuid_generate_v4(), james_id, emily_id, 'Hello Emily, is there parking available at your Hollywood Hills property?', true, '2023-03-18 14:20:00'),
+                    (uuid_generate_v4(), emily_id, james_id, 'Hi James! Yes, there is one dedicated parking spot included with the rental.', true, '2023-03-18 15:05:00'),
 
-('i1b2c3d4-1234-5678-9abc-123456789092', 'a1b2c3d4-1234-5678-9abc-123456789001', 'a1b2c3d4-1234-5678-9abc-123456789004', 
- 'Hello David! Yes, the pool is heated and maintained at 82°F throughout the year. Let me know if you have any other questions!', '2023-05-10 10:15:00'),
+                    -- Messages between Maria Garcia and Mike Chen
+                    (uuid_generate_v4(), maria_id, mike_id, 'Hi Mike, what''s the check-in process for your Queens condo?', true, '2023-04-05 11:30:00'),
+                    (uuid_generate_v4(), mike_id, maria_id, 'Hello Maria! I use a smart lock system. I''ll send you the code 24 hours before check-in.', true, '2023-04-05 12:15:00'),
 
--- Host to Guest messages
-('i1b2c3d4-1234-5678-9abc-123456789093', 'a1b2c3d4-1234-5678-9abc-123456789002', 'a1b2c3d4-1234-5678-9abc-123456789005', 
- 'Hi Lisa, just wanted to confirm your check-in time for next week. Do you need any local restaurant recommendations?', '2023-07-05 16:20:00'),
+                    -- Messages between Robert Taylor and David Wilson
+                    (uuid_generate_v4(), robert_id, david_id, 'Hi David, is your Lake Tahoe cabin pet-friendly?', false, '2023-06-12 16:40:00');
 
-('i1b2c3d4-1234-5678-9abc-123456789094', 'a1b2c3d4-1234-5678-9abc-123456789005', 'a1b2c3d4-1234-5678-9abc-123456789002', 
- 'Hi Mike! We should arrive around 3 PM. Restaurant recommendations would be wonderful, thank you!', '2023-07-05 17:05:00'),
+                END;
+            END;
+        END;
+    END;
+END $$;
 
--- Guest to Guest messages
-('i1b2c3d4-1234-5678-9abc-123456789095', 'a1b2c3d4-1234-5678-9abc-123456789006', 'a1b2c3d4-1234-5678-9abc-123456789007', 
- 'Hey Maria, we stayed at Emily''s desert property last month - you''ll love it! The pool is amazing.', '2023-09-01 11:40:00');
+-- =====================================================
+-- 15. VERIFICATION QUERIES
+-- =====================================================
+
+-- Display sample data counts
+SELECT 
+    (SELECT COUNT(*) FROM "User") as total_users,
+    (SELECT COUNT(*) FROM Property) as total_properties,
+    (SELECT COUNT(*) FROM Booking) as total_bookings,
+    (SELECT COUNT(*) FROM Payment) as total_payments,
+    (SELECT COUNT(*) FROM Review) as total_reviews,
+    (SELECT COUNT(*) FROM Message) as total_messages;
+
+-- Display users by role
+SELECT role, COUNT(*) as count 
+FROM "User" 
+GROUP BY role 
+ORDER BY count DESC;
+
+-- Display bookings by status
+SELECT status_code, COUNT(*) as count 
+FROM Booking 
+GROUP BY status_code 
+ORDER BY count DESC;
+
+-- Display average property ratings
+SELECT p.name, ROUND(AVG(r.rating), 2) as avg_rating, COUNT(r.review_id) as review_count
+FROM Property p
+LEFT JOIN Review r ON p.property_id = r.property_id
+GROUP BY p.property_id, p.name
+ORDER BY avg_rating DESC NULLS LAST;
+
+-- Display revenue by property
+SELECT p.name, SUM(b.total_price) as total_revenue, COUNT(b.booking_id) as booking_count
+FROM Property p
+JOIN Booking b ON p.property_id = b.property_id
+WHERE b.status_code IN ('completed', 'confirmed')
+GROUP BY p.property_id, p.name
+ORDER BY total_revenue DESC;
